@@ -33,13 +33,15 @@
       debug = self.packages.${system}.default.overrideAttrs (oldAttrs: {
         name = "Mem-Alloc (DEBUG)";
 
-        donStrip = true;
         hardeningDisable = [ "fortify" ];
 
         doCheck = true;
 
+        NIX_CFLAGS_COMPILE = "-Llib";
+
         checkPhase = ''
-          make -f ./tests/run-tests.mk
+          export LD_LIBRARY_PATH=lib:$LD_LIBRARY_PATH
+          make -f ./run-tests.mk
         '';
       });
     };
