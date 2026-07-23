@@ -6,9 +6,6 @@
 struct M_header;
 typedef struct M_header M_header;
 
-struct M_footer;
-typedef struct M_footer M_footer;
-
 void *m_alloc(size_t size);
 void m_free(void *ptr);
 
