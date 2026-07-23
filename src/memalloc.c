@@ -21,14 +21,11 @@
 #define MMAP_ALLOC_THRESHOLD 131072 // 128kb max before switching to mmap allocations
 
 struct M_header {
+    size_t prev_size;
     size_t size;
 
     M_header *prev;
     M_header *next;
-};
-
-struct M_footer {
-    size_t size_copy;
 };
 
 M_header *head, *tail;
@@ -61,7 +58,10 @@ void *m_alloc(size_t size) {
         return NULL;
     }
 
-    total_size = sizeof(size_t) + ALIGN_SIZE(size) + sizeof(M_footer);
+            // Size of the header that -
+            // matters, ignore the pointers -
+            // if the block is being used
+    total_size = (sizeof(size_t) * 2) + ALIGN_SIZE(size);
 
     header = find_free_block(total_size);
     if (header) {
