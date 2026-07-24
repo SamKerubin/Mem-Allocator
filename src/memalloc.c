@@ -39,7 +39,7 @@ static M_header *find_free_block(size_t size) {
             // TODO: Handle block splitting
             return curr;
         }
-        curr = curr->next;
+        curr = (M_header *)((char *)curr + GET_REAL_SIZE(curr) + (sizeof(size_t) * 2));
     }
     return NULL;
 }
