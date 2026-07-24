@@ -81,8 +81,12 @@ void *m_alloc(size_t size) {
     if (!head) {
         head = header;
     }
+
     if (tail) {
         tail->next = header;
+        header->prev_size = GET_REAL_SIZE(tail);
+    } else {
+        header->prev_size = 0;
     }
     tail = header;
 
