@@ -15,7 +15,7 @@
 #define SIZE_FLAGS          OCCUPANCY_FLAG | MMAP_ALLOC_FLAG
 
 #define GET_REAL_SIZE(b)    ((b)->size & ~(SIZE_FLAGS))
-#define IS_BLOCK_FREE(b)    ((b)->size & OCCUPANCY_FLAG)
+#define IS_BLOCK_FREE(b)    ((b)->size & ~OCCUPANCY_FLAG)
 #define IS_MMAP_ALLOC(b)    ((b)->size & MMAP_ALLOC_FLAG)
 
 #define MMAP_ALLOC_THRESHOLD 131072 // 128kb max before switching to mmap allocations
@@ -52,6 +52,7 @@ void *m_alloc(size_t size) {
     void *block;
     M_header *header;
     size_t total_size;
+    size_t aligned_size = ALIGN_SIZE(size);
 
     if (size >= MMAP_ALLOC_THRESHOLD) {
         // Alloc using mmap
@@ -61,12 +62,12 @@ void *m_alloc(size_t size) {
             // Size of the header that -
             // matters, ignore the pointers -
             // if the block is being used
-    total_size = (sizeof(size_t) * 2) + ALIGN_SIZE(size);
+    total_size = (sizeof(size_t) * 2) + aligned_size;
 
-    header = find_free_block(total_size);
+    header = find_free_block(aligned_size);
     if (header) {
-        header->size &= ~(SIZE_FLAGS);
-        return (void *)(header + 1);
+        header->size |= OCCUPANCY_FLAG;
+        return (void *)((size_t *)header + 2);
     }
 
     block = sbrk(total_size);
@@ -75,7 +76,7 @@ void *m_alloc(size_t size) {
     }
 
     header = block;
-    header->size = total_size | OCCUPANCY_FLAG;
+    header->size = aligned_size | OCCUPANCY_FLAG;
 
     if (!head) {
         head = header;
@@ -85,7 +86,7 @@ void *m_alloc(size_t size) {
     }
     tail = header;
 
-    return (void *)(header + 1);
+    return (void *)((size_t *)header + 2);
 }
 
 void m_free(void *ptr) {
