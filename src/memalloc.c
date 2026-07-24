@@ -15,7 +15,7 @@
 #define SIZE_FLAGS          OCCUPANCY_FLAG | MMAP_ALLOC_FLAG
 
 #define GET_REAL_SIZE(b)    ((b)->size & ~(SIZE_FLAGS))
-#define IS_BLOCK_FREE(b)    ((b)->size & ~OCCUPANCY_FLAG)
+#define IS_BLOCK_FREE(b)    (((b)->size & OCCUPANCY_FLAG) == 0)
 #define IS_MMAP_ALLOC(b)    ((b)->size & MMAP_ALLOC_FLAG)
 
 #define MMAP_ALLOC_THRESHOLD 131072 // 128kb max before switching to mmap allocations
