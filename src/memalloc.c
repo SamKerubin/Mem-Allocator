@@ -37,11 +37,11 @@ static M_header *find_free_block(size_t size) {
 
     while (curr) {
         // First fit
-        if (IS_BLOCK_FREE(curr) && GET_REAL_SIZE(curr) >= size) {
+        if (GET_REAL_SIZE(curr) >= size) {
             // TODO: Handle block splitting
             return curr;
         }
-        curr = (M_header *)((char *)curr + GET_REAL_SIZE(curr) + (sizeof(size_t) * 2));
+        curr = curr->next;
     }
     return NULL;
 }
@@ -68,6 +68,15 @@ void *m_alloc(size_t size) {
 
     header = find_free_block(aligned_size);
     if (header) {
+        if (header == head) {
+            head = head->next;
+        } else if (header == tail) {
+            tail = tail->prev;
+        } else {
+            header->prev->next = header->next;
+            header->next->prev = header->prev;
+        }
+
         header->size |= CURR_IN_USE_FLAG;
         return (void *)((size_t *)header + 2);
     }
@@ -79,18 +88,6 @@ void *m_alloc(size_t size) {
 
     header = block;
     header->size = aligned_size | CURR_IN_USE_FLAG;
-
-    if (!head) {
-        head = header;
-    }
-
-    if (tail) {
-        tail->next = header;
-        header->prev_size = GET_REAL_SIZE(tail);
-    } else {
-        header->prev_size = 0;
-    }
-    tail = header;
 
     return (void *)((size_t *)header + 2);
 }
