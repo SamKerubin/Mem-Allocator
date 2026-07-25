@@ -31,6 +31,7 @@ struct M_header {
 };
 
 M_header *head, *tail;
+M_header *heap_start, *heap_end;
 
 static M_header *find_free_block(size_t size) {
     M_header *curr = head;
@@ -77,6 +78,11 @@ void *m_alloc(size_t size) {
             header->next->prev = header->prev;
         }
 
+        if (header != heap_end) {
+            M_header *next_h = (M_header *)((char *)header + GET_REAL_SIZE(header) + (sizeof(size_t) * 2));
+            next_h->size |= PREV_IN_USE_FLAG;
+        }
+
         header->size |= CURR_IN_USE_FLAG;
         return (void *)((size_t *)header + 2);
     }
@@ -88,6 +94,19 @@ void *m_alloc(size_t size) {
 
     header = block;
     header->size = aligned_size | CURR_IN_USE_FLAG;
+
+    if (!heap_start) {
+        heap_start = header;
+        header->size |= PREV_IN_USE_FLAG;
+    }
+
+    if (heap_end) {
+        if (!IS_BLOCK_FREE(heap_end)) {
+            header->size |= PREV_IN_USE_FLAG;
+            header->prev_size = GET_REAL_SIZE(heap_end);
+        }
+    }
+    heap_end = header;
 
     return (void *)((size_t *)header + 2);
 }
