@@ -5,10 +5,12 @@
 #define MEM_FAIL            ((void *)-1)
 
 #if defined(__x86_64__)
+    #define MIN_SPLIT_BYTES 32
     #define ALIGN_SIZE(X)   (((X) + 0xF) & ~0xF)
 #else
+    #define MINMIN_SPLIT_BYTES 16
     #define ALIGN_SIZE(X)   (((X) + 0x7) & ~0x7)
-#endif
+#endif // __x86_64__
 
 #define CURR_IN_USE_FLAG    (1 << 0)
 #define MMAP_ALLOC_FLAG     (1 << 1)
@@ -38,11 +40,31 @@ static M_header *find_free_block(size_t size) {
 
     while (curr) {
         // First fit
-        if (GET_REAL_SIZE(curr) >= size) {
-            // TODO: Handle block splitting
+        ssize_t diff = GET_REAL_SIZE(curr) - size;
+        if (diff < 0) {
+            curr = curr->next;
+            continue;
+        }
+
+        // Depending on the architecture of the CPU, blocks need at least 32/16 bytes to be able to split
+        // The important part of the header is 16/8 bytes, but the payload needs to be aligned to 16/8 bytes as well
+        // -- it casually fits the 2 pointers of the free list too huh? really convenient
+
+        if (diff < MIN_SPLIT_BYTES) {
             return curr;
         }
-        curr = curr->next;
+
+        if (diff >= MIN_SPLIT_BYTES) {
+            curr->size = size | (curr->size & SIZE_FLAGS);
+
+            M_header *splitted_h = (M_header *)((char *)curr + size);
+            splitted_h->size = (size_t)diff;
+
+            splitted_h->next = head;
+            head = splitted_h;
+
+            return curr;
+        }
     }
     return NULL;
 }
