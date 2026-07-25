@@ -205,11 +205,13 @@ void m_free(void *ptr) {
         M_header *next_next_h = (M_header *)((char *)next_h + GET_REAL_SIZE(next_h) + (sizeof(size_t) * 2));
         next_next_h->prev_size = GET_REAL_SIZE(header);
 
-        header->prev = next_h->prev;
-        header->next = next_h->next;
-        next_h->prev->next = header;
-        next_next_h->next->prev = header;
+        remove_block_from_free_list(next_h);
     } else {
         next_h->prev_size = GET_REAL_SIZE(header);
     }
+
+    header->next = head;
+    header->prev = NULL;
+    head->prev = header;
+    head = header;
 }
