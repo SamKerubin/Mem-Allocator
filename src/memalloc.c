@@ -68,18 +68,24 @@ void *m_alloc(size_t size) {
 
     void *block;
     M_header *header;
-    size_t total_size;
     size_t aligned_size = ALIGN_SIZE(size);
-
-    if (size >= MMAP_ALLOC_THRESHOLD) {
-        // Alloc using mmap
-        return NULL;
-    }
-
+ 
             // Size of the header that -
             // matters, ignore the pointers -
             // if the block is being used
-    total_size = (sizeof(size_t) * 2) + aligned_size;
+    size_t total_size = (sizeof(size_t) * 2) + aligned_size;
+
+    if (size >= MMAP_ALLOC_THRESHOLD) {
+        block = mmap(NULL, total_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        if (block == MAP_FAILED) {
+            return NULL;
+        }
+
+        header = block;
+        header->size = total_size | MMAP_ALLOC_FLAG;
+
+        return (void *)((size_t *)header + 2);
+    }
 
     header = find_free_block(aligned_size);
     if (header) {
@@ -125,7 +131,7 @@ void m_free(void *ptr) {
 
     M_header *header = ((M_header *)ptr - 1);
     if (IS_MMAP_ALLOC(header)) {
-        // Handle mmap
+        munmap(header, GET_REAL_SIZE(header));
         return;
     }
 
