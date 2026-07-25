@@ -61,6 +61,8 @@ static M_header *find_free_block(size_t size) {
             splitted_h->size = (size_t)diff;
 
             splitted_h->next = head;
+            splitted_h->prev = NULL;
+            head->prev = splitted_h;
             head = splitted_h;
 
             return curr;
