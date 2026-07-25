@@ -1,20 +1,16 @@
 #include <memalloc.h>
 #include <stdio.h>
-#include "test_setup.h"
 
 void use_ptr(size_t *ptr) {
     *ptr = 10;
 }
 
-int main() {
-    setup();
-    
+int main() {    
     size_t *ptr = m_alloc(sizeof(size_t));
     *ptr = 240000;
     printf("%ld\n", *ptr);
     use_ptr(ptr);
     printf("%ld\n", *ptr);
-
 
     int *arr = m_alloc(10 * sizeof(int));
     for (int i = 0; i < 10; i++) {
@@ -55,5 +51,8 @@ int main() {
     m_free(mmap_alloc);
     m_free(arr);
     m_free(ptr);
+
+    printf("Passed!\n");
+
     return 0;
 }
