@@ -128,19 +128,52 @@ void m_free(void *ptr) {
 
     if (header == heap_end) {
         size_t shrink_size = (sizeof(size_t) * 2) + GET_REAL_SIZE(header);
-        // TODO: Merge prev block if free (update shrink_size to match the size of the merged blocks)
 
         prev_h = (M_header *)((char *)header - (header->prev_size + (sizeof(size_t) * 2)));
-        heap_end = prev_h;
+
+        // Merge prev
+        if (IS_PREV_FREE(header)) {
+            shrink_size += header->prev_size + (sizeof(size_t) * 2);
+
+            if (prev_h != heap_start) {
+                M_header *prev_prev_h = (M_header *)((char *)prev_h - (prev_h->prev_size + (sizeof(size_t) * 2)));
+                heap_end = prev_prev_h;
+            }
+
+            prev_h->prev->next = prev_h->next;
+            prev_h->next->prev = prev_h->prev;
+        } else {
+            heap_end = prev_h;
+        }
 
         sbrk(-(intptr_t)shrink_size);
         return;
     }
 
-    header->next = head;
-    head->prev = header;
-    head = header;
-
     M_header *next_h = (M_header *)((char *)header + GET_REAL_SIZE(header) + (sizeof(size_t) * 2));
     next_h->size &= ~(PREV_IN_USE_FLAG);
+
+    // Merge prev
+    if (IS_PREV_FREE(header)) {
+        prev_h = (M_header *)((char *)header - (header->prev_size + (sizeof(size_t) * 2)));
+        size_t total_size = GET_REAL_SIZE(header) + header->prev_size + (sizeof(size_t) * 2);
+        prev_h->size = total_size | (prev_h->size & SIZE_FLAGS);
+        header = prev_h;
+    }
+
+    // Merge next
+    if (IS_BLOCK_FREE(next_h)) {
+        size_t total_size = GET_REAL_SIZE(header) + GET_REAL_SIZE(next_h) + (sizeof(size_t) * 2);
+        header->size = total_size | (header->size & SIZE_FLAGS);
+
+        M_header *next_next_h = (M_header *)((char *)next_h + GET_REAL_SIZE(next_h) + (sizeof(size_t) * 2));
+        next_next_h->prev_size = GET_REAL_SIZE(header);
+
+        header->prev = next_h->prev;
+        header->next = next_h->next;
+        next_h->prev->next = header;
+        next_next_h->next->prev = header;
+    } else {
+        next_h->prev_size = GET_REAL_SIZE(header);
+    }
 }
