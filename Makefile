@@ -2,6 +2,12 @@ CC = gcc
 LDFLAGS = -shared
 CFLAGS = -fPIC -Wall -Wextra -Werror -Iinclude/ -std=gnu23
 
+ifdef DEBUG
+	CFLAGS += -O0 -g
+else
+	CFLAGS += -O2
+endif
+
 SRC_DIR = src
 OBJ_DIR = obj
 LIB_DIR = lib

@@ -35,9 +35,18 @@
 
         hardeningDisable = [ "fortify" ];
 
+        separateDebugInfo = true;
+        enableDebugging = true;
+
         doCheck = true;
 
-        NIX_CFLAGS_COMPILE = "-Llib";
+        dontStrip = true;
+
+        NIX_CFLAGS_COMPILE = "-g -O0 -Llib";
+
+        buildPhase = ''
+          make DEBUG=1
+        '';
 
         checkPhase = ''
           export LD_LIBRARY_PATH=lib:$LD_LIBRARY_PATH
@@ -45,10 +54,10 @@
         '';
 
         installPhase = ''
-          mkdir -p $out/lib $out/include $out/bin
-          cp lib/libmemalloc.so $out/lib
-          cp include/memalloc.h $out/include
-          cp bin/test $out/bin
+          mkdir -vp $out/lib $out/include $out/bin
+          cp -v lib/libmemalloc.so $out/lib
+          cp -v include/memalloc.h $out/include
+          cp -v bin/* $out/bin
         '';
       });
     };
