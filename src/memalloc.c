@@ -37,6 +37,31 @@ struct M_header {
 M_header *head, *tail;
 M_header *heap_start, *heap_end;
 
+static void add_block_to_start_of_list(M_header *block) {
+    block->prev = NULL;
+    block->next = head;
+
+    if (head) {
+        head->prev = block;
+    }
+
+    head = block;
+}
+
+static void remove_block_from_free_list(M_header *h) {
+    if (h->prev) {
+        h->prev->next = h->next;
+    } else {
+        head = h->next;
+    }
+
+    if (h->next) {
+        h->next->prev = h->prev;
+    } else {
+        tail = h->prev;
+    }
+}
+
 static M_header *find_free_block(size_t size) {
     M_header *curr = head;
 
@@ -62,29 +87,12 @@ static M_header *find_free_block(size_t size) {
             M_header *splitted_h = (M_header *)((char *)curr + size);
             splitted_h->size = (size_t)diff;
 
-            splitted_h->next = head;
-            splitted_h->prev = NULL;
-            head->prev = splitted_h;
-            head = splitted_h;
+            add_block_to_start_of_list(splitted_h);
 
             return curr;
         }
     }
     return NULL;
-}
-
-static void remove_block_from_free_list(M_header *h) {
-    if (h->prev) {
-        h->prev->next = h->next;
-    } else {
-        head = h->next;
-    }
-
-    if (h->next) {
-        h->next->prev = h->prev;
-    } else {
-        tail = h->prev;
-    }
 }
 
 void *m_alloc(size_t size) {
@@ -212,8 +220,5 @@ void m_free(void *ptr) {
         next_h->prev_size = GET_REAL_SIZE(header);
     }
 
-    header->next = head;
-    header->prev = NULL;
-    head->prev = header;
-    head = header;
+    add_block_to_start_of_list(header);
 }
