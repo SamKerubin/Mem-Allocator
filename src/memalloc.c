@@ -129,7 +129,7 @@ void m_free(void *ptr) {
         return;
     }
 
-    M_header *header = ((M_header *)ptr - 1);
+    M_header *header = (M_header *)((size_t *)ptr - 2);
     if (IS_MMAP_ALLOC(header)) {
         munmap(header, GET_REAL_SIZE(header));
         return;
