@@ -24,6 +24,8 @@
 
 #define MMAP_ALLOC_THRESHOLD 131072 // 128kb max before switching to mmap allocations
 
+typedef struct M_header M_header;
+
 struct M_header {
     size_t prev_size;
     size_t size;
