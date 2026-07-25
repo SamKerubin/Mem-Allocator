@@ -116,33 +116,31 @@ void m_free(void *ptr) {
         return;
     }
 
-    M_header *header = (M_header *)(ptr - 1);
+    M_header *header = ((M_header *)ptr - 1);
     if (IS_MMAP_ALLOC(header)) {
         // Handle mmap
         return;
     }
 
     header->size &= ~(CURR_IN_USE_FLAG);
-    header->prev = (M_header *)((char *)header - header->prev_size - (sizeof(size_t) * 2));
 
-    void *program_brk = sbrk(0);
-    size_t real_size = GET_REAL_SIZE(header);
+    M_header *prev_h;
 
-    if ((char *)header + real_size == program_brk) {
-        size_t shrink_size = (sizeof(size_t) * 2) + real_size;
-        if (head == tail) {
-            head = tail = NULL;
-        } else {
-            // TODO: Merge prev block if free (update shrink_size to match the size of the merged blocks)
+    if (header == heap_end) {
+        size_t shrink_size = (sizeof(size_t) * 2) + GET_REAL_SIZE(header);
+        // TODO: Merge prev block if free (update shrink_size to match the size of the merged blocks)
 
-            tail = header->prev;
-            tail->next = NULL;
-        }
+        prev_h = (M_header *)((char *)header - (header->prev_size + (sizeof(size_t) * 2)));
+        heap_end = prev_h;
 
         sbrk(-(intptr_t)shrink_size);
         return;
     }
 
-    // Merge prev and/or next if they are free
-    // header->next = (M_header *)((char *)header + GET_REAL_SIZE(header) + (sizeof(size_t) * 2));
+    header->next = head;
+    head->prev = header;
+    head = header;
+
+    M_header *next_h = (M_header *)((char *)header + GET_REAL_SIZE(header) + (sizeof(size_t) * 2));
+    next_h->size &= ~(PREV_IN_USE_FLAG);
 }
