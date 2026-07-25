@@ -6,13 +6,13 @@ void use_ptr(size_t *ptr) {
 }
 
 int main() {    
-    size_t *ptr = m_alloc(sizeof(size_t));
+    size_t *ptr = malloc(sizeof(size_t));
     *ptr = 240000;
     printf("%ld\n", *ptr);
     use_ptr(ptr);
     printf("%ld\n", *ptr);
 
-    int *arr = m_alloc(10 * sizeof(int));
+    int *arr = malloc(10 * sizeof(int));
     for (int i = 0; i < 10; i++) {
         arr[i] = i + 1;
     }
@@ -21,36 +21,36 @@ int main() {
         printf("%d: %d\n", i + 1, arr[i]);
     }
 
-    int *mmap_alloc = m_alloc(sizeof(int) * (128 * 1024));
+    int *mmap_alloc = malloc(sizeof(int) * (128 * 1024));
 
-    int *alloc1 = m_alloc(32 * sizeof(int));
-    int *alloc2 = m_alloc(sizeof(int));
-    int *alloc3 = m_alloc(16 * sizeof(int));
-    int *alloc4 = m_alloc(60 * sizeof(int));
-    int *alloc5 = m_alloc(32 * sizeof(int));
-    int *alloc6 = m_alloc(128 * sizeof(int));
-    int *alloc7 = m_alloc(40 * sizeof(int));
-    int *alloc8 = m_alloc(50 * sizeof(int));
-    int *alloc9 = m_alloc(10 * sizeof(int));
-    int *alloc10 = m_alloc(5 * sizeof(int));
-    int *alloc11 = m_alloc(3 * sizeof(int));
-    int *alloc12 = m_alloc(200 * sizeof(int));
+    int *alloc1 = malloc(32 * sizeof(int));
+    int *alloc2 = malloc(sizeof(int));
+    int *alloc3 = malloc(16 * sizeof(int));
+    int *alloc4 = malloc(60 * sizeof(int));
+    int *alloc5 = malloc(32 * sizeof(int));
+    int *alloc6 = malloc(128 * sizeof(int));
+    int *alloc7 = malloc(40 * sizeof(int));
+    int *alloc8 = malloc(50 * sizeof(int));
+    int *alloc9 = malloc(10 * sizeof(int));
+    int *alloc10 = malloc(5 * sizeof(int));
+    int *alloc11 = malloc(3 * sizeof(int));
+    int *alloc12 = malloc(200 * sizeof(int));
 
-    m_free(alloc1);
-    m_free(alloc2);
-    m_free(alloc3);
-    m_free(alloc4);
-    m_free(alloc5);
-    m_free(alloc6);
-    m_free(alloc7);
-    m_free(alloc8);
-    m_free(alloc9);
-    m_free(alloc10);
-    m_free(alloc11);
-    m_free(alloc12);
-    m_free(mmap_alloc);
-    m_free(arr);
-    m_free(ptr);
+    free(alloc1);
+    free(alloc2);
+    free(alloc3);
+    free(alloc4);
+    free(alloc5);
+    free(alloc6);
+    free(alloc7);
+    free(alloc8);
+    free(alloc9);
+    free(alloc10);
+    free(alloc11);
+    free(alloc12);
+    free(mmap_alloc);
+    free(arr);
+    free(ptr);
 
     printf("Passed!\n");
 
