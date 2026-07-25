@@ -43,6 +43,13 @@
           export LD_LIBRARY_PATH=lib:$LD_LIBRARY_PATH
           make -f ./run-tests.mk
         '';
+
+        installPhase = ''
+          mkdir -p $out/lib $out/include $out/bin
+          cp lib/libmemalloc.so $out/lib
+          cp include/memalloc.h $out/include
+          cp bin/test $out/bin
+        '';
       });
     };
     
