@@ -47,6 +47,20 @@ static M_header *find_free_block(size_t size) {
     return NULL;
 }
 
+static void remove_block_from_free_list(M_header *h) {
+    if (h->prev) {
+        h->prev->next = h->next;
+    } else {
+        head = h->next;
+    }
+
+    if (h->next) {
+        h->next->prev = h->prev;
+    } else {
+        tail = h->prev;
+    }
+}
+
 void *m_alloc(size_t size) {
     if (size == 0) {
         return NULL;
@@ -69,14 +83,7 @@ void *m_alloc(size_t size) {
 
     header = find_free_block(aligned_size);
     if (header) {
-        if (header == head) {
-            head = head->next;
-        } else if (header == tail) {
-            tail = tail->prev;
-        } else {
-            header->prev->next = header->next;
-            header->next->prev = header->prev;
-        }
+        remove_block_from_free_list(header);
 
         if (header != heap_end) {
             M_header *next_h = (M_header *)((char *)header + GET_REAL_SIZE(header) + (sizeof(size_t) * 2));
@@ -140,8 +147,7 @@ void m_free(void *ptr) {
                 heap_end = prev_prev_h;
             }
 
-            prev_h->prev->next = prev_h->next;
-            prev_h->next->prev = prev_h->prev;
+            remove_block_from_free_list(prev_h);
         } else {
             heap_end = prev_h;
         }
