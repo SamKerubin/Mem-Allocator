@@ -222,3 +222,15 @@ void m_free(void *ptr) {
 
     add_block_to_start_of_list(header);
 }
+
+/*
+ * Testing using the standard names
+ * */
+
+void *malloc(size_t size) {
+    return m_alloc(size);
+}
+
+void free(void *ptr) {
+    m_free(ptr);
+}
