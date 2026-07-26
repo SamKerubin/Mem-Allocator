@@ -35,8 +35,8 @@ struct M_header {
     M_header *next;
 };
 
-M_header *head, *tail;
-M_header *heap_start, *heap_end;
+static M_header *head, *tail;
+static M_header *heap_start, *heap_end;
 
 static void add_block_to_start_of_list(M_header *block) {
     block->prev = NULL;

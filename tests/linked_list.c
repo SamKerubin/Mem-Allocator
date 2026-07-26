@@ -23,14 +23,15 @@ void list_add(int val) {
 
     list_node *next = calloc(1, sizeof(list_node));
     next->val = val;
+    curr->next = next;
 }
 
 void free_list() {
     list_node *curr = head;
-    list_node *tmp = head;
-    while (tmp) {
-        tmp = tmp->next;
+    while (curr) {
+        list_node *tmp = curr->next;
         free(curr);
+        curr = tmp;
     }
 }
 
