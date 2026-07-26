@@ -171,7 +171,7 @@ void m_free(void *ptr) {
 
     M_header *header = (M_header *)((size_t *)ptr - 2);
     if (IS_MMAP_ALLOC(header)) {
-        munmap(header, GET_REAL_SIZE(header));
+        munmap(header, GET_REAL_SIZE(header) + (sizeof(size_t) * 2));
         return;
     }
 
