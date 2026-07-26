@@ -9,7 +9,7 @@
     #define MIN_SPLIT_BYTES 32
     #define ALIGN_SIZE(X)   (((X) + 0xF) & ~0xF)
 #else
-    #define MINMIN_SPLIT_BYTES 16
+    #define MIN_SPLIT_BYTES 16
     #define ALIGN_SIZE(X)   (((X) + 0x7) & ~0x7)
 #endif // __x86_64__
 
