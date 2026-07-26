@@ -15,7 +15,7 @@ all: $(BIN_DIR) $(BIN)
 	echo -e "Running tests...\n"; \
 	for test in $(BIN); do \
 		echo -e "Executing test: $$test\n"; \
-		./$$test || { echo -e "Failed test\n"; ((tests_failed+=1)); } \
+		./$$test && echo -e "Test passed\n" || { echo -e "Failed test\n"; ((tests_failed+=1)); } \
 	done; \
 	[ "$$tests_failed" -eq 0 ] && echo "All tests passed successfully" || echo "$$tests_failed" tests failed;
 
