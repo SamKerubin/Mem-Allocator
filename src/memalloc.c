@@ -1,4 +1,5 @@
 #include <memalloc.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
@@ -223,6 +224,39 @@ void m_free(void *ptr) {
     add_block_to_start_of_list(header);
 }
 
+void *m_calloc(size_t nmemb, size_t size) {
+    if (nmemb == 0 || size == 0) {
+        return NULL;
+    }
+
+    void *ptr = m_alloc(nmemb * size);
+    if (ptr == NULL) {
+        return NULL;
+    }
+
+    memset(ptr, 0, (nmemb * size));
+    return ptr;
+}
+
+void *m_realloc(void *ptr, size_t size) {
+    if (ptr == NULL) {
+        return m_alloc(size);
+    }
+
+    if (size == 0) {
+        m_free(ptr);
+        return NULL;
+    }
+
+    void *new = m_alloc(size);
+    if (new != NULL) {
+        memcpy(new, ptr, size);
+        free(ptr);
+    }
+
+    return new;
+}
+
 /*
  * Testing using the standard names
  * */
@@ -233,4 +267,12 @@ void *malloc(size_t size) {
 
 void free(void *ptr) {
     m_free(ptr);
+}
+
+void *calloc(size_t nmemb, size_t size) {
+    return m_calloc(nmemb, size);
+}
+
+void *realloc(void *ptr, size_t size) {
+    return m_realloc(ptr, size);
 }
