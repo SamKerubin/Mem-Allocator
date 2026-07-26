@@ -85,8 +85,9 @@ static M_header *find_free_block(size_t size) {
         if (diff >= MIN_SPLIT_BYTES) {
             curr->size = size | (curr->size & SIZE_FLAGS);
 
-            M_header *splitted_h = (M_header *)((char *)curr + size);
+            M_header *splitted_h = (M_header *)((char *)curr + size + (sizeof(size_t) * 2));
             splitted_h->size = (size_t)diff;
+            splitted_h->prev_size = GET_REAL_SIZE(curr);
 
             add_block_to_start_of_list(splitted_h);
 
@@ -153,7 +154,11 @@ void *m_alloc(size_t size) {
             header->size |= PREV_IN_USE_FLAG;
             header->prev_size = GET_REAL_SIZE(heap_end);
         }
+    } else {
+        header->prev_size = 0;
+        header->size |= PREV_IN_USE_FLAG;
     }
+
     heap_end = header;
 
     return (void *)((size_t *)header + 2);
@@ -219,6 +224,7 @@ void m_free(void *ptr) {
         remove_block_from_free_list(next_h);
     } else {
         next_h->prev_size = GET_REAL_SIZE(header);
+        next_h->size &= ~(PREV_IN_USE_FLAG);
     }
 
     add_block_to_start_of_list(header);
