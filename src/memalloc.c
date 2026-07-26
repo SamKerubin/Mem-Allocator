@@ -257,7 +257,7 @@ void *m_realloc(void *ptr, size_t size) {
     void *new = m_alloc(size);
     if (new != NULL) {
         memcpy(new, ptr, size);
-        free(ptr);
+        m_free(ptr);
     }
 
     return new;
