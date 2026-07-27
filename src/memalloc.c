@@ -65,36 +65,42 @@ static void remove_block_from_free_list(M_header *h) {
 
 static M_header *find_free_block(size_t size) {
     M_header *curr = head;
+    M_header *best = NULL;
+    size_t best_diff = MMAP_ALLOC_THRESHOLD;
 
     while (curr) {
-        // First fit
+        // Best fit
+        // First fit is easier to implement, but best fit provides less external fragmentation
+        // best fit might make it less predictable? idk, but it works best imo... hehe... best... get it?
         ssize_t diff = GET_REAL_SIZE(curr) - size;
-        if (diff < 0) {
+        if (diff == 0) {
+            return curr;
+        }
+ 
+        // Depending on the architecture of the CPU, blocks need at least 32/16 bytes to be able to split
+        // The important part of the header is 16/8 bytes, but the payload needs to be aligned to 16/8 bytes as well
+        // -- it casually fits the 2 pointers of the free list too huh? really convenient       
+        if (diff < MIN_SPLIT_BYTES || diff > (ssize_t)best_diff) {
             curr = curr->next;
             continue;
         }
 
-        // Depending on the architecture of the CPU, blocks need at least 32/16 bytes to be able to split
-        // The important part of the header is 16/8 bytes, but the payload needs to be aligned to 16/8 bytes as well
-        // -- it casually fits the 2 pointers of the free list too huh? really convenient
-
-        if (diff < MIN_SPLIT_BYTES) {
-            return curr;
-        }
-
-        if (diff >= MIN_SPLIT_BYTES) {
-            curr->size = size | (curr->size & SIZE_FLAGS);
-
-            M_header *splitted_h = (M_header *)((char *)curr + size + (sizeof(size_t) * 2));
-            splitted_h->size = (size_t)diff;
-            splitted_h->prev_size = GET_REAL_SIZE(curr);
-
-            add_block_to_start_of_list(splitted_h);
-
-            return curr;
-        }
+        best = curr;
+        best_diff = diff;
     }
-    return NULL;
+
+    if (best == NULL) {
+        return NULL;
+    }
+
+    best->size = size | (curr->size & SIZE_FLAGS);
+
+    M_header *splitted_h = (M_header *)((char *)best + size + (sizeof(size_t) * 2));
+    splitted_h->size = best_diff;
+    splitted_h->prev_size = GET_REAL_SIZE(best);
+    add_block_to_start_of_list(splitted_h);
+
+    return best;
 }
 
 void *m_alloc(size_t size) {
