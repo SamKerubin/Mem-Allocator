@@ -80,7 +80,7 @@ static M_header *find_free_block(size_t size) {
         // Depending on the architecture of the CPU, blocks need at least 32/16 bytes to be able to split
         // The important part of the header is 16/8 bytes, but the payload needs to be aligned to 16/8 bytes as well
         // -- it casually fits the 2 pointers of the free list too huh? really convenient       
-        if (diff < MIN_SPLIT_BYTES || diff > (ssize_t)best_diff) {
+        if (diff < MIN_SPLIT_BYTES || diff >= (ssize_t)best_diff) {
             curr = curr->next;
             continue;
         }
@@ -93,7 +93,7 @@ static M_header *find_free_block(size_t size) {
         return NULL;
     }
 
-    best->size = size | (curr->size & SIZE_FLAGS);
+    best->size = size | (best->size & SIZE_FLAGS);
 
     M_header *splitted_h = (M_header *)((char *)best + size + (sizeof(size_t) * 2));
     splitted_h->size = best_diff;
