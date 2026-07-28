@@ -271,9 +271,13 @@ void *m_realloc(void *ptr, size_t size) {
         return NULL;
     }
 
+    M_header *header = ((M_header *)(size_t *)ptr - 2);
+    size_t old_size = GET_REAL_SIZE(header);
+
     void *new = m_alloc(size);
     if (new != NULL) {
-        memcpy(new, ptr, size);
+        size_t copy_size = (old_size < size) ? old_size : size;
+        memcpy(new, ptr, copy_size);
         m_free(ptr);
     }
 
