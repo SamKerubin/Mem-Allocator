@@ -62,6 +62,9 @@ static void remove_block_from_free_list(M_header *h) {
     } else {
         tail = h->prev;
     }
+
+    h->prev = NULL;
+    h->next = NULL;
 }
 
 static M_header *find_free_block(size_t size) {
