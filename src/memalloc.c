@@ -183,6 +183,10 @@ void m_free(void *ptr) {
         return;
     }
 
+    if (IS_BLOCK_FREE(header)) {
+        return;
+    }
+
     header->size &= ~(CURR_IN_USE_FLAG);
 
     M_header *prev_h;
