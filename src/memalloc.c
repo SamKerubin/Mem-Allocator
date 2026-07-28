@@ -1,4 +1,5 @@
 #include <memalloc.h>
+#include <stdint.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -66,7 +67,7 @@ static void remove_block_from_free_list(M_header *h) {
 static M_header *find_free_block(size_t size) {
     M_header *curr = head;
     M_header *best = NULL;
-    size_t best_diff = MMAP_ALLOC_THRESHOLD;
+    size_t best_diff = SIZE_MAX;
 
     while (curr) {
         // Best fit
@@ -87,6 +88,7 @@ static M_header *find_free_block(size_t size) {
 
         best = curr;
         best_diff = diff;
+        curr = curr->next;
     }
 
     if (best == NULL) {
@@ -214,6 +216,8 @@ void m_free(void *ptr) {
     // Merge prev
     if (IS_PREV_FREE(header)) {
         prev_h = (M_header *)((char *)header - (header->prev_size + (sizeof(size_t) * 2)));
+        remove_block_from_free_list(prev_h);
+
         size_t total_size = GET_REAL_SIZE(header) + header->prev_size + (sizeof(size_t) * 2);
         prev_h->size = total_size | (prev_h->size & SIZE_FLAGS);
         header = prev_h;
