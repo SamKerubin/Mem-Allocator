@@ -8,11 +8,15 @@
 
 #if defined(__x86_64__)
     #define MIN_SPLIT_BYTES 32
+    #define MIN_ALIGN       16
     #define ALIGN_SIZE(X)   (((X) + 0xF) & ~0xF)
 #else
     #define MIN_SPLIT_BYTES 16
+    #define MIN_ALIGN       8
     #define ALIGN_SIZE(X)   (((X) + 0x7) & ~0x7)
 #endif // __x86_64__
+
+#define IS_POWER_OF_2(X)    (((X) & ~((X) - 1)) == 0)
 
 #define CURR_IN_USE_FLAG    (1 << 0)
 #define MMAP_ALLOC_FLAG     (1 << 1)
@@ -285,9 +289,25 @@ void *m_realloc(void *ptr, size_t size) {
 }
 
 void *m_aligned_alloc(size_t alignment, size_t size) {
-    (void)alignment;
-    (void)size;
-    return NULL;
+    if (alignment > (SIZE_MAX / 2) + 1 || alignment == 0) {
+        return NULL;
+    }
+
+    if (alignment <= MIN_ALIGN) {
+        return m_alloc(size);
+    }
+
+    // i think the standard strictly requires powers of two?
+    // but yk what idgaf, this makes more sense to me... in a way? ig?
+    if (!IS_POWER_OF_2(alignment)) {
+        size_t align = MIN_ALIGN * 2;
+        while (align < alignment) {
+            align <<= 1;
+        }
+        alignment = align;
+    }
+
+    return m_alloc(alignment);
 }
 
 /*
@@ -311,7 +331,5 @@ void *realloc(void *ptr, size_t size) {
 }
 
 void *aligned_alloc(size_t alignment, size_t size) {
-    (void)alignment;
-    (void)size;
-    return NULL;
+    return m_aligned_alloc(alignment, size);
 }
