@@ -16,6 +16,8 @@
     #define ALIGN_SIZE(X)   (((X) + 0x7) & ~0x7)
 #endif // __x86_64__
 
+#define ALIGN_TO(X, AL)     ((X) + ((AL) - 1) & ~((AL) - 1))
+
 #define IS_POWER_OF_2(X)    (((X) & ~((X) - 1)) == 0)
 
 #define CURR_IN_USE_FLAG    (1 << 0)
@@ -307,7 +309,8 @@ void *m_aligned_alloc(size_t alignment, size_t size) {
         alignment = align;
     }
 
-    return m_alloc(alignment);
+    size_t aligned_size = ALIGN_TO(size, alignment);
+    return m_alloc(aligned_size);
 }
 
 /*
