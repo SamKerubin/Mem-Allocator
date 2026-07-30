@@ -6,17 +6,17 @@
 
 #define MEM_FAIL            ((void *)-1)
 
+#define ALIGN_TO(X, AL)     ((X) + ((AL) - 1) & ~((AL) - 1))
+
 #if defined(__x86_64__)
     #define MIN_SPLIT_BYTES 32
     #define MIN_ALIGN       16
-    #define ALIGN_SIZE(X)   (((X) + 0xF) & ~0xF)
+    #define ALIGN_SIZE(X)   ALIGN_TO((X), 0x10)
 #else
     #define MIN_SPLIT_BYTES 16
     #define MIN_ALIGN       8
-    #define ALIGN_SIZE(X)   (((X) + 0x7) & ~0x7)
+    #define ALIGN_SIZE(X)   ALIGN_TO((X), 0x8)
 #endif // __x86_64__
-
-#define ALIGN_TO(X, AL)     ((X) + ((AL) - 1) & ~((AL) - 1))
 
 #define IS_POWER_OF_2(X)    (((X) & ~((X) - 1)) == 0)
 
