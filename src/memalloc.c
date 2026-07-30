@@ -284,6 +284,12 @@ void *m_realloc(void *ptr, size_t size) {
     return new;
 }
 
+void *m_aligned_alloc(size_t alignment, size_t size) {
+    (void)alignment;
+    (void)size;
+    return NULL;
+}
+
 /*
  * Testing using the standard names
  * */
@@ -302,4 +308,10 @@ void *calloc(size_t nmemb, size_t size) {
 
 void *realloc(void *ptr, size_t size) {
     return m_realloc(ptr, size);
+}
+
+void *aligned_alloc(size_t alignment, size_t size) {
+    (void)alignment;
+    (void)size;
+    return NULL;
 }
