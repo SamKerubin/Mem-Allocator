@@ -37,4 +37,8 @@ all: $(TARGET)
 clean:
 	@rm -rf $(OBJ_DIR) $(TARGET)
 
-.PHONY: all clean
+install: all
+	@sudo cp include/memalloc.h /usr/local/include/
+	@sudo cp lib/libmemalloc.so /usr/local/lib/
+
+.PHONY: all clean install
