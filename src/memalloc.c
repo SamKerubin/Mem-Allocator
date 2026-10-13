@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <errno.h>
 
 #define MEM_FAIL            ((void *)-1)
 
@@ -155,6 +156,7 @@ void *m_alloc(size_t size) {
 
     block = sbrk(total_size);
     if (block == MEM_FAIL) {
+        errno = ENOMEM;
         return NULL;
     }
 
